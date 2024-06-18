@@ -19,253 +19,355 @@
     <div id="container"></div>
     <script>
 
-      function getDistance(p1, p2) {
-        return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
-      }
+let width = window.innerWidth;
+let height = window.innerHeight;
 
-			function getCenter(p1, p2) {
-				return {
-					x: (p1.x + p2.x) / 2,
-					y: (p1.y + p2.y) / 2,
-				};
-			}
+let stage = new Konva.Stage({
+	container: 'container',
+	width: width,
+	height: height,
+	// draggable: true,
+});
 
-      let lastCenter = null;
-      let lastDist = 0;
-      let dragStopped = false;
+let layer = new Konva.Layer();
+stage.add(layer);
 
-      Konva.hitOnDragEnabled = true;
-	
-	  	let isBackground = true;
-	
-      let width = window.innerWidth;
-      let height = window.innerHeight;
+function getStats() {
+	const earthEdgeRadiusMiles = 3963.19;
+	const mantleEdgeRadius = earthEdgeRadiusMiles - 12;
+	const outerCoreEdgeRadius = mantleEdgeRadius - 1802;
+	const innerCoreEdgeRadius = outerCoreEdgeRadius - 746;
+	return {
+		earthEdgeRadiusMiles,
+		mantleEdgeRadius,
+		outerCoreEdgeRadius,
+		innerCoreEdgeRadius,
+	}
+}
+const {
+	earthEdgeRadiusMiles,
+	mantleEdgeRadius,
+	outerCoreEdgeRadius,
+	innerCoreEdgeRadius,
+} = getStats();
 
-      let stage = new Konva.Stage({
-        container: 'container',
-        width: width,
-        height: height,
-        // draggable: true,
-      });
+const rad = earthEdgeRadiusMiles;
+const planetRad = stage.height() * 0.4;
+const planetRatio = planetRad / rad;
 
-      let layer = new Konva.Layer();
-      stage.add(layer);
-	  
-			if (isBackground) {
-				layer.add(new Konva.Rect({
-				x: 0,
-				y: 0,
-				width: stage.width(),
-				height: stage.height(),
-				fill: 'black',
-				}));
-			}
-			
-			const rad = 3963.19;
-			const planetRad = stage.height() * 0.4;
-			const planetRatio = planetRad / rad;
+function milesToCanvas(miles) {
+	return miles * planetRatio;
+}
+
+function calcDropoff(d, r = rad) {
+	return (r * (1 - Math.cos(d / r))) * planetRatio;
+}
+
+function calcDropoffPostRatio(d, r = planetRad) {
+	return (r * (1 - Math.cos(d / r)));
+}
+
+function getDistance(p1, p2) {
+	return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+}
+
+function getCenter(p1, p2) {
+	return {
+		x: (p1.x + p2.x) / 2,
+		y: (p1.y + p2.y) / 2,
+	};
+}
+
+function getSceneFuncTriangle(height, width) {
+	return function(context, shape) {
+		context.beginPath();
+		context.moveTo(0, 0);
+		context.lineTo(-(width / 2), 0);
+		context.lineTo(0, -height);
+		context.lineTo(width / 2, 0);
+		context.closePath();
 		
-			let calcDropoff = (d, r = rad) => (r * (1 - Math.cos(d / r))) * planetRatio;
-		
-			let calcDropoffPostRatio = (d, r = planetRad) => (r * (1 - Math.cos(d / r)));
-			
-			console.log(`Actual Rad: ${rad} vs used Rad: ${planetRad} (${planetRatio * 100}%)`);
+		// (!) Konva specific method, it is very important
+		context.fillStrokeShape(shape);
+	}
+}
 
-      /* Planet */
-      layer.add(new Konva.Circle({
-        x: stage.width() / 2,
-        y: stage.height() / 2,
-        radius: planetRad,
-        fill: 'green',
-      }));
-	  
-	  
-      /* Traveller from Destiny */
-			const midTopOfPlanet = (stage.height() / 2) - planetRad;
-			const miniCircleRad = 0.745645;
-			layer.add(new Konva.Circle({
-				x: stage.width() / 2,
-			y: midTopOfPlanet - ((miniCircleRad * planetRatio) * 2) - (((miniCircleRad * planetRatio) * 2) * 0.1),
-			radius: miniCircleRad * planetRatio,
-			fill: 'white',
-			}));
-	  
-      /* Mount Everest */
-			const mountEvHeight = 5.498 * planetRatio;
-			layer.add(new Konva.RegularPolygon({
-				sides: 3,
-			radius: mountEvHeight / 2,
-			x: (stage.width() / 2) - ((miniCircleRad * planetRatio) * 5),
-			y: midTopOfPlanet - (mountEvHeight / 4),
-			fill: 'grey',
-			}));
-	  
-      /* Rig */
-			const rigDistance = 9.41 * planetRatio;
-			const rigHeight = 0.0170455 * planetRatio;
-			const rigWidth = 0.0310686 * planetRatio;
-			
-			layer.add(new Konva.Rect({
-				x: (stage.width() / 2) - rigDistance,
-			y: midTopOfPlanet - rigHeight + calcDropoff(9.41),
-			width: rigWidth,
-			height: rigHeight,
-			fill: 'blue',
-			}));
-	  
-      /* Rig (Text) */
-			layer.add(new Konva.Text({
-				x: (stage.width() / 2) - rigDistance,
-			y: midTopOfPlanet - (mountEvHeight * 0.5),
-			width: stage.width(),
-			height: stage.height(),
-			fill: 'blue',
-			text: 'Rig',
-			fontSize: mountEvHeight * 0.25,
-			}));
-	  
-	  
-      /* Burj Khalifa */
-			const burjKhalifaHeight = 0.514495 * planetRatio;
-			const burjKhalifaWidth = 0.114742404 * planetRatio;
-			layer.add(new Konva.RegularPolygon({
-				sides: 3,
-			radius: burjKhalifaHeight / 2,
-			x: (stage.width() / 2) - 1,
-			y: midTopOfPlanet - (burjKhalifaHeight / 4) + calcDropoffPostRatio(1),
-			fill: 'white',
-			}));
-			
-	  
-      /* Cross */
-			const crossSize = 0.01;
-			layer.add(new Konva.Line({
-				points: [
-				stage.width() / 2            , midTopOfPlanet // mid
-				,stage.width() / 2            , midTopOfPlanet - crossSize // mid-top
-				,stage.width() / 2            , midTopOfPlanet + crossSize // mid-bottom
-				,stage.width() / 2            , midTopOfPlanet // mid
-				,stage.width() / 2 - crossSize, midTopOfPlanet // mid-top
-				,stage.width() / 2 + crossSize, midTopOfPlanet // mid-top
-				],
-				stroke: 'red',
-				strokeWidth: crossSize * 0.1,
-	  	}));
-	  
-	  
-			/** Zoom functionality */
+let lastCenter = null;
+let lastDist = 0;
+let dragStopped = false;
 
-			let scaleBy = 1.1;
-			stage.on('wheel', (e) => {
-				// stop default scrolling
-				e.evt.preventDefault();
+Konva.hitOnDragEnabled = true;
 
-				let oldScale = stage.scaleX();
-				let pointer = stage.getPointerPosition();
+let isBackground = true;
 
-				let mousePointTo = {
-					x: (pointer.x - stage.x()) / oldScale,
-					y: (pointer.y - stage.y()) / oldScale,
-				};
+if (isBackground) {
+	layer.add(new Konva.Rect({
+	x: 0,
+	y: 0,
+	width: stage.width(),
+	height: stage.height(),
+	fill: 'black',
+	}));
+}
 
-				// how to scale? Zoom in? Or zoom out?
-				let direction = e.evt.deltaY < 0 ? 1 : -1;
+console.log(`Actual Rad: ${rad} vs used Rad: ${planetRad} (${planetRatio * 100}%)`);
 
-				// when we zoom on trackpad, e.evt.ctrlKey is true
-				// in that case lets revert direction
-				if (e.evt.ctrlKey) {
-					direction = -direction;
-				}
+/* Planet */
+layer.add(new Konva.Circle({
+	x: stage.width() / 2,
+	y: stage.height() / 2,
+	radius: planetRad,
+	fill: 'green',
+}));
 
-				let newScale = direction > 0 ? oldScale * scaleBy : oldScale / scaleBy;
+// Mantle
+layer.add(new Konva.Circle({
+	x: stage.width() / 2,
+	y: stage.height() / 2,
+	radius: milesToCanvas(mantleEdgeRadius),
+	fill: 'red',
+}));
 
-				stage.scale({ x: newScale, y: newScale });
+// Outer Core
+layer.add(new Konva.Circle({
+	x: stage.width() / 2,
+	y: stage.height() / 2,
+	radius: milesToCanvas(outerCoreEdgeRadius),
+	fill: 'orange',
+}));
 
-				let newPos = {
-					x: pointer.x - mousePointTo.x * newScale,
-					y: pointer.y - mousePointTo.y * newScale,
-				};
-				stage.position(newPos);
-			});
-			
-			stage.on('click', () => {
-				console.log('Click');
-				let elm = document.getElementById('isBackground');
-				elm.click();
-			});
-			
-			/* Mobile Zoom */
-			stage.on('touchmove', function (e) {
-				e.evt.preventDefault();
-				var touch1 = e.evt.touches[0];
-				var touch2 = e.evt.touches[1];
+// Inner Core
+layer.add(new Konva.Circle({
+	x: stage.width() / 2,
+	y: stage.height() / 2,
+	radius: milesToCanvas(innerCoreEdgeRadius),
+	fill: 'yellow',
+}));
 
-				// we need to restore dragging, if it was cancelled by multi-touch
-				if (touch1 && !touch2 && !stage.isDragging() && dragStopped) {
-					stage.startDrag();
-					dragStopped = false;
-				}
 
-				if (touch1 && touch2) {
-					// if the stage was under Konva's drag&drop
-					// we need to stop it, and implement our own pan logic with two pointers
-					if (stage.isDragging()) {
-						dragStopped = true;
-						stage.stopDrag();
-					}
+/* Traveller from Destiny */
+const midTopOfPlanet = (stage.height() / 2) - planetRad;
+const miniCircleRad = 0.745645;
+layer.add(new Konva.Circle({
+	x: stage.width() / 2,
+	y: midTopOfPlanet - (milesToCanvas(miniCircleRad) * 2) - ((milesToCanvas(miniCircleRad) * 2) * 0.1),
+	radius: milesToCanvas(miniCircleRad),
+	fill: 'white',
+}));
 
-					var p1 = {
-						x: touch1.clientX,
-						y: touch1.clientY,
-					};
-					var p2 = {
-						x: touch2.clientX,
-						y: touch2.clientY,
-					};
+/* Mount Everest */
+const mountEvHeight = milesToCanvas(5.498);
+const mountEvRadiusApprox = milesToCanvas(2.91);
+layer.add(new Konva.Shape({
+	x: (stage.width() / 2) - (milesToCanvas(miniCircleRad) * 5),
+	y: midTopOfPlanet,
+	fill: 'grey',
+	sceneFunc: getSceneFuncTriangle(mountEvHeight, mountEvRadiusApprox),
+}));
 
-					if (!lastCenter) {
-						lastCenter = getCenter(p1, p2);
-						return;
-					}
-					var newCenter = getCenter(p1, p2);
 
-					var dist = getDistance(p1, p2);
+/* Burj Khalifa */
+const burjKhalifaHeight = milesToCanvas(0.514495);
+const burjKhalifaWidth = milesToCanvas(0.114742404);
+// layer.add(new Konva.RegularPolygon({
+// 	sides: 3,
+// 	radius: burjKhalifaHeight / 2,
+// 	x: (stage.width() / 2) - 1,
+// 	y: midTopOfPlanet - (burjKhalifaHeight / 4) + calcDropoffPostRatio(1),
+// 	fill: 'white',
+// }));
+layer.add(new Konva.Shape({
+	x: (stage.width() / 2) - 1,
+	y: midTopOfPlanet + calcDropoffPostRatio(1),
+	fill: 'white',
+	sceneFunc: getSceneFuncTriangle(burjKhalifaHeight, burjKhalifaWidth),
+}));
 
-					if (!lastDist) {
-						lastDist = dist;
-					}
+/* Rig */
+const rigDistance = milesToCanvas(9.41);
+const rigHeight = milesToCanvas(0.0170455);
+const rigWidth = milesToCanvas(0.0310686);
 
-					// local coordinates of center point
-					var pointTo = {
-						x: (newCenter.x - stage.x()) / stage.scaleX(),
-						y: (newCenter.y - stage.y()) / stage.scaleX(),
-					};
+layer.add(new Konva.Rect({
+	x: (stage.width() / 2) - rigDistance,
+	y: midTopOfPlanet - rigHeight + calcDropoff(9.41),
+	width: rigWidth,
+	height: rigHeight,
+	fill: 'blue',
+}));
 
-					var scale = stage.scaleX() * (dist / lastDist);
+/* Rig (Text) */
+layer.add(new Konva.Text({
+	x: (stage.width() / 2) - rigDistance,
+	y: midTopOfPlanet - (mountEvHeight * 0.5),
+	width: stage.width(),
+	height: stage.height(),
+	fill: 'blue',
+	text: 'Black Swan \'Rig\'',
+	fontSize: burjKhalifaHeight,
+}));
 
-					stage.scaleX(scale);
-					stage.scaleY(scale);
+/* Rig (Line) */
+layer.add(new Konva.Line({
+	points: [
+		[
+			(stage.width() / 2) - rigDistance,
+			midTopOfPlanet - (mountEvHeight * 0.4)
+		],
+		[
+			(stage.width() / 2) - rigDistance,
+			(midTopOfPlanet - rigHeight + calcDropoff(9.41)) - (rigHeight * 2)
+		]
+	].flat(),
+	stroke: 'lightblue',
+	strokeWidth: milesToCanvas(rigWidth * 5),
+	dashEnabled: true,
+	dash: [milesToCanvas(rigHeight * 10), milesToCanvas(rigHeight * 10)],
+}));
 
-					// calculate new position of the stage
-					var dx = newCenter.x - lastCenter.x;
-					var dy = newCenter.y - lastCenter.y;
+/* ISS Orbit */
+layer.add(new Konva.Circle({
+	x: stage.width() / 2,
+	y: stage.height() / 2,
+	radius: milesToCanvas(earthEdgeRadiusMiles + 254),
+	stroke: 'white',
+	strokeWidth: milesToCanvas(0.1),
+	fill: '#FFFFFF00',
+}));
 
-					var newPos = {
-						x: newCenter.x - pointTo.x * scale + dx,
-						y: newCenter.y - pointTo.y * scale + dy,
-					};
 
-					stage.position(newPos);
+/* Cross */
+const crossSize = 0.01;
+layer.add(new Konva.Line({
+	points: [
+	stage.width() / 2            , midTopOfPlanet // mid
+	,stage.width() / 2            , midTopOfPlanet - crossSize // mid-top
+	,stage.width() / 2            , midTopOfPlanet + crossSize // mid-bottom
+	,stage.width() / 2            , midTopOfPlanet // mid
+	,stage.width() / 2 - crossSize, midTopOfPlanet // mid-top
+	,stage.width() / 2 + crossSize, midTopOfPlanet // mid-top
+	],
+	stroke: 'red',
+	strokeWidth: crossSize * 0.1,
+}));
 
-					lastDist = dist;
-					lastCenter = newCenter;
-				}
-				});
 
-				stage.on('touchend', function (e) {
-					lastDist = 0;
-					lastCenter = null;
-			});
+
+
+
+
+/** Zoom functionality */
+let scaleBy = 1.1;
+stage.on('wheel', (e) => {
+	// stop default scrolling
+	e.evt.preventDefault();
+
+	let oldScale = stage.scaleX();
+	let pointer = stage.getPointerPosition();
+
+	let mousePointTo = {
+		x: (pointer.x - stage.x()) / oldScale,
+		y: (pointer.y - stage.y()) / oldScale,
+	};
+
+	// how to scale? Zoom in? Or zoom out?
+	let direction = e.evt.deltaY < 0 ? 1 : -1;
+
+	// when we zoom on trackpad, e.evt.ctrlKey is true
+	// in that case lets revert direction
+	if (e.evt.ctrlKey) {
+		direction = -direction;
+	}
+
+	let newScale = direction > 0 ? oldScale * scaleBy : oldScale / scaleBy;
+
+	stage.scale({ x: newScale, y: newScale });
+
+	let newPos = {
+		x: pointer.x - mousePointTo.x * newScale,
+		y: pointer.y - mousePointTo.y * newScale,
+	};
+	stage.position(newPos);
+});
+
+stage.on('click', () => {
+	console.log('Click');
+	let elm = document.getElementById('isBackground');
+	elm.click();
+});
+
+/* Mobile Zoom */
+stage.on('touchmove', function (e) {
+	e.evt.preventDefault();
+	var touch1 = e.evt.touches[0];
+	var touch2 = e.evt.touches[1];
+
+	// we need to restore dragging, if it was cancelled by multi-touch
+	if (touch1 && !touch2 && !stage.isDragging() && dragStopped) {
+		stage.startDrag();
+		dragStopped = false;
+	}
+
+	if (touch1 && touch2) {
+		// if the stage was under Konva's drag&drop
+		// we need to stop it, and implement our own pan logic with two pointers
+		if (stage.isDragging()) {
+			dragStopped = true;
+			stage.stopDrag();
+		}
+
+		var p1 = {
+			x: touch1.clientX,
+			y: touch1.clientY,
+		};
+		var p2 = {
+			x: touch2.clientX,
+			y: touch2.clientY,
+		};
+
+		if (!lastCenter) {
+			lastCenter = getCenter(p1, p2);
+			return;
+		}
+		var newCenter = getCenter(p1, p2);
+
+		var dist = getDistance(p1, p2);
+
+		if (!lastDist) {
+			lastDist = dist;
+		}
+
+		// local coordinates of center point
+		var pointTo = {
+			x: (newCenter.x - stage.x()) / stage.scaleX(),
+			y: (newCenter.y - stage.y()) / stage.scaleX(),
+		};
+
+		var scale = stage.scaleX() * (dist / lastDist);
+
+		stage.scaleX(scale);
+		stage.scaleY(scale);
+
+		// calculate new position of the stage
+		var dx = newCenter.x - lastCenter.x;
+		var dy = newCenter.y - lastCenter.y;
+
+		var newPos = {
+			x: newCenter.x - pointTo.x * scale + dx,
+			y: newCenter.y - pointTo.y * scale + dy,
+		};
+
+		stage.position(newPos);
+
+		lastDist = dist;
+		lastCenter = newCenter;
+	}
+	});
+
+	stage.on('touchend', function (e) {
+		lastDist = 0;
+		lastCenter = null;
+});
     </script>
   </body>
 </html>
