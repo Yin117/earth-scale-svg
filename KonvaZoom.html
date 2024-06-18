@@ -32,6 +32,8 @@ let stage = new Konva.Stage({
 let layer = new Konva.Layer();
 stage.add(layer);
 
+// ISS orbit = 254
+
 function getStats() {
 	const earthEdgeRadiusMiles = 3963.19;
 	const mantleEdgeRadius = earthEdgeRadiusMiles - 12;
@@ -165,22 +167,37 @@ layer.add(new Konva.Shape({
 	sceneFunc: getSceneFuncTriangle(mountEvHeight, mountEvRadiusApprox),
 }));
 
+/* Mount Everest (Text) */
+layer.add(new Konva.Text({
+	x: (stage.width() / 2) - (milesToCanvas(miniCircleRad) * 5),
+	y: midTopOfPlanet - mountEvHeight - milesToCanvas(1),
+	width: stage.width(),
+	height: stage.height(),
+	fill: 'grey',
+	text: 'Mount Everest',
+	fontSize: milesToCanvas(1),
+}));
+
 
 /* Burj Khalifa */
 const burjKhalifaHeight = milesToCanvas(0.514495);
 const burjKhalifaWidth = milesToCanvas(0.114742404);
-// layer.add(new Konva.RegularPolygon({
-// 	sides: 3,
-// 	radius: burjKhalifaHeight / 2,
-// 	x: (stage.width() / 2) - 1,
-// 	y: midTopOfPlanet - (burjKhalifaHeight / 4) + calcDropoffPostRatio(1),
-// 	fill: 'white',
-// }));
 layer.add(new Konva.Shape({
 	x: (stage.width() / 2) - 1,
 	y: midTopOfPlanet + calcDropoffPostRatio(1),
 	fill: 'white',
 	sceneFunc: getSceneFuncTriangle(burjKhalifaHeight, burjKhalifaWidth),
+}));
+
+/* Burj Khalifa (Text) */
+layer.add(new Konva.Text({
+	x: (stage.width() / 2) - 1 - (burjKhalifaWidth * 20),
+	y: midTopOfPlanet - (burjKhalifaHeight * 2),
+	width: stage.width(),
+	height: stage.height(),
+	fill: 'white',
+	text: 'Burj Khalifa',
+	fontSize: burjKhalifaHeight,
 }));
 
 /* Rig */
@@ -235,6 +252,19 @@ layer.add(new Konva.Circle({
 	fill: '#FFFFFF00',
 }));
 
+/* ISS Orbit (Text) */
+layer.add(new Konva.Text({
+	x: 0,
+	y: 0,
+	width: stage.width(),
+	height: (stage.height() / 2) - milesToCanvas(earthEdgeRadiusMiles + 254),
+	fill: 'white',
+	text: 'ISS Orbit',
+	align: 'center',
+	verticalAlign: 'bottom',
+	fontSize: mountEvHeight,
+}));
+
 
 /* Cross */
 const crossSize = 0.01;
@@ -253,12 +283,53 @@ layer.add(new Konva.Line({
 
 
 
+// TODO: Crosshair
+// https://observablehq.com/@imakashram/line-chart-with-crosshair
 
+/* Crosshair on Click */
+// const crosshairGroup = new Konva.Group({
+// 	x: 0,
+// 	y: 0,
+// });
+// layer.add(crosshairGroup);
+// const crosshairArea = new Konva.Rect({
+// 	x: 0,
+// 	y: 0,
+// 	width: stage.width(),
+// 	height: stage.height(),
+// });
+// crosshairGroup.add(crosshairArea);
+
+// const crosshair = new Konva.Circle({
+// 	x: 0,
+// 	y: 0,
+// 	radius: 0,
+// 	color: 'red',
+// });
+// // layer.add(crosshair);
+// // crosshairGroup.add(crosshair);
+
+// stage.on('mousemove touchmove', event => {
+// 	console.log('crosshairArea - mousemove touchmove');
+
+// 	const pos = stage.getPointerPosition(); // crosshairGroup.getRelativePointerPosition();
+	
+// 	console.log(`(${pos.x}, ${pos.y})`);
+// 	crosshair.x(pos.x);
+// 	crosshair.y(pos.y);
+
+// 	crosshair.radius(milesToCanvas(10));
+
+// 	layer.add(crosshair);
+// 	layer.draw();
+// });
 
 
 /** Zoom functionality */
 let scaleBy = 1.1;
 stage.on('wheel', (e) => {
+	console.log('stage - wheel');
+
 	// stop default scrolling
 	e.evt.preventDefault();
 
@@ -291,9 +362,9 @@ stage.on('wheel', (e) => {
 });
 
 stage.on('click', () => {
-	console.log('Click');
+	console.log('stage - click');
 	let elm = document.getElementById('isBackground');
-	elm.click();
+	elm?.click();
 });
 
 /* Mobile Zoom */
