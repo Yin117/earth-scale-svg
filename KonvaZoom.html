@@ -10,7 +10,7 @@
         margin: 0;
         padding: 0;
         overflow: hidden;
-        background-color: #f0f0f0;
+        background-color: #000000;
       }
     </style>
   </head>
@@ -35,27 +35,58 @@ stage.add(layer);
 // ISS orbit = 254
 
 function getStats() {
-	const earthEdgeRadiusMiles = 3963.19;
+	const earthEdgeRadiusMiles = 3_963.19;
 	const mantleEdgeRadius = earthEdgeRadiusMiles - 12;
-	const outerCoreEdgeRadius = mantleEdgeRadius - 1802;
+	const outerCoreEdgeRadius = mantleEdgeRadius - 1_802;
 	const innerCoreEdgeRadius = outerCoreEdgeRadius - 746;
+
+	const distanceToSun = 93_000_000;
+	const sunRadius = 432_690;
+	const issOrbit = 254;
+
+	const karmanLine = 62;
+	const averageCommercialFlightMin = 5.9;
+	const averageCommercialFlightMax = 7.2;
+
 	return {
+		issEdge: earthEdgeRadiusMiles + issOrbit,
+		issOrbit,
 		earthEdgeRadiusMiles,
 		mantleEdgeRadius,
 		outerCoreEdgeRadius,
 		innerCoreEdgeRadius,
+		distanceToSun,
+		sunRadius,
+		karmanLine,
+		averageCommercialFlightMax,
+		averageCommercialFlightMin,
 	}
 }
 const {
+	issEdge, // : earthEdgeRadiusMiles + issOrbit,
+	issOrbit,
 	earthEdgeRadiusMiles,
 	mantleEdgeRadius,
 	outerCoreEdgeRadius,
 	innerCoreEdgeRadius,
+	distanceToSun,
+	sunRadius,
+	karmanLine,
+	averageCommercialFlightMax,
+	averageCommercialFlightMin,
 } = getStats();
+
+const earthCenterPosition = {
+	x: stage.width() / 2,
+	y: stage.height() / 2,
+};
+console.log('earthCenterPosition', earthCenterPosition);
 
 const rad = earthEdgeRadiusMiles;
 const planetRad = stage.height() * 0.4;
 const planetRatio = planetRad / rad;
+
+const midTopOfPlanet = (earthCenterPosition.y) - planetRad;
 
 function milesToCanvas(miles) {
 	return miles * planetRatio;
@@ -116,52 +147,51 @@ console.log(`Actual Rad: ${rad} vs used Rad: ${planetRad} (${planetRatio * 100}%
 
 /* Planet */
 layer.add(new Konva.Circle({
-	x: stage.width() / 2,
-	y: stage.height() / 2,
+	x: earthCenterPosition.x,
+	y: earthCenterPosition.y,
 	radius: planetRad,
 	fill: 'green',
 }));
 
 // Mantle
 layer.add(new Konva.Circle({
-	x: stage.width() / 2,
-	y: stage.height() / 2,
+	x: earthCenterPosition.x,
+	y: earthCenterPosition.y,
 	radius: milesToCanvas(mantleEdgeRadius),
 	fill: 'red',
 }));
 
 // Outer Core
 layer.add(new Konva.Circle({
-	x: stage.width() / 2,
-	y: stage.height() / 2,
+	x: earthCenterPosition.x,
+	y: earthCenterPosition.y,
 	radius: milesToCanvas(outerCoreEdgeRadius),
 	fill: 'orange',
 }));
 
 // Inner Core
 layer.add(new Konva.Circle({
-	x: stage.width() / 2,
-	y: stage.height() / 2,
+	x: earthCenterPosition.x,
+	y: earthCenterPosition.y,
 	radius: milesToCanvas(innerCoreEdgeRadius),
 	fill: 'yellow',
 }));
 
 
 /* Traveller from Destiny */
-const midTopOfPlanet = (stage.height() / 2) - planetRad;
-const miniCircleRad = 0.745645;
-layer.add(new Konva.Circle({
-	x: stage.width() / 2,
-	y: midTopOfPlanet - (milesToCanvas(miniCircleRad) * 2) - ((milesToCanvas(miniCircleRad) * 2) * 0.1),
-	radius: milesToCanvas(miniCircleRad),
-	fill: 'white',
-}));
+// const miniCircleRad = 0.745645;
+// layer.add(new Konva.Circle({
+// 	x: stage.width() / 2,
+// 	y: midTopOfPlanet - (milesToCanvas(miniCircleRad) * 2) - ((milesToCanvas(miniCircleRad) * 2) * 0.1),
+// 	radius: milesToCanvas(miniCircleRad),
+// 	fill: 'white',
+// }));
 
 /* Mount Everest */
 const mountEvHeight = milesToCanvas(5.498);
 const mountEvRadiusApprox = milesToCanvas(2.91);
 layer.add(new Konva.Shape({
-	x: (stage.width() / 2) - (milesToCanvas(miniCircleRad) * 5),
+	x: (earthCenterPosition.x) - (milesToCanvas(1) * 5),
 	y: midTopOfPlanet,
 	fill: 'grey',
 	sceneFunc: getSceneFuncTriangle(mountEvHeight, mountEvRadiusApprox),
@@ -169,7 +199,7 @@ layer.add(new Konva.Shape({
 
 /* Mount Everest (Text) */
 layer.add(new Konva.Text({
-	x: (stage.width() / 2) - (milesToCanvas(miniCircleRad) * 5),
+	x: (earthCenterPosition.x) - (milesToCanvas(1) * 5),
 	y: midTopOfPlanet - mountEvHeight - milesToCanvas(1),
 	width: stage.width(),
 	height: stage.height(),
@@ -183,7 +213,7 @@ layer.add(new Konva.Text({
 const burjKhalifaHeight = milesToCanvas(0.514495);
 const burjKhalifaWidth = milesToCanvas(0.114742404);
 layer.add(new Konva.Shape({
-	x: (stage.width() / 2) - 1,
+	x: (earthCenterPosition.x) - 1,
 	y: midTopOfPlanet + calcDropoffPostRatio(1),
 	fill: 'white',
 	sceneFunc: getSceneFuncTriangle(burjKhalifaHeight, burjKhalifaWidth),
@@ -191,7 +221,7 @@ layer.add(new Konva.Shape({
 
 /* Burj Khalifa (Text) */
 layer.add(new Konva.Text({
-	x: (stage.width() / 2) - 1 - (burjKhalifaWidth * 20),
+	x: (earthCenterPosition.x) - 1 - (burjKhalifaWidth * 20),
 	y: midTopOfPlanet - (burjKhalifaHeight * 2),
 	width: stage.width(),
 	height: stage.height(),
@@ -204,9 +234,8 @@ layer.add(new Konva.Text({
 const rigDistance = milesToCanvas(9.41);
 const rigHeight = milesToCanvas(0.0170455);
 const rigWidth = milesToCanvas(0.0310686);
-
 layer.add(new Konva.Rect({
-	x: (stage.width() / 2) - rigDistance,
+	x: (earthCenterPosition.x) - rigDistance,
 	y: midTopOfPlanet - rigHeight + calcDropoff(9.41),
 	width: rigWidth,
 	height: rigHeight,
@@ -215,7 +244,7 @@ layer.add(new Konva.Rect({
 
 /* Rig (Text) */
 layer.add(new Konva.Text({
-	x: (stage.width() / 2) - rigDistance,
+	x: (earthCenterPosition.x) - rigDistance,
 	y: midTopOfPlanet - (mountEvHeight * 0.5),
 	width: stage.width(),
 	height: stage.height(),
@@ -228,11 +257,11 @@ layer.add(new Konva.Text({
 layer.add(new Konva.Line({
 	points: [
 		[
-			(stage.width() / 2) - rigDistance,
+			(earthCenterPosition.x) - rigDistance,
 			midTopOfPlanet - (mountEvHeight * 0.4)
 		],
 		[
-			(stage.width() / 2) - rigDistance,
+			(earthCenterPosition.x) - rigDistance,
 			(midTopOfPlanet - rigHeight + calcDropoff(9.41)) - (rigHeight * 2)
 		]
 	].flat(),
@@ -244,9 +273,9 @@ layer.add(new Konva.Line({
 
 /* ISS Orbit */
 layer.add(new Konva.Circle({
-	x: stage.width() / 2,
-	y: stage.height() / 2,
-	radius: milesToCanvas(earthEdgeRadiusMiles + 254),
+	x: earthCenterPosition.x,
+	y: earthCenterPosition.y,
+	radius: milesToCanvas(issEdge),
 	stroke: 'white',
 	strokeWidth: milesToCanvas(0.1),
 	fill: '#FFFFFF00',
@@ -254,23 +283,95 @@ layer.add(new Konva.Circle({
 
 /* ISS Orbit (Text) */
 layer.add(new Konva.Text({
-	x: 0,
-	y: 0,
-	width: stage.width(),
-	height: (stage.height() / 2) - milesToCanvas(earthEdgeRadiusMiles + 254),
+	x: earthCenterPosition.x - milesToCanvas(innerCoreEdgeRadius),
+	y: earthCenterPosition.y - milesToCanvas(issEdge),
+	width: milesToCanvas(innerCoreEdgeRadius) * 2,
+	height: mountEvHeight,
 	fill: 'white',
 	text: 'ISS Orbit',
 	align: 'center',
-	verticalAlign: 'bottom',
+	verticalAlign: 'top',
 	fontSize: mountEvHeight,
 }));
+
+/* Karmen Line*/
+layer.add(new Konva.Circle({
+	x: earthCenterPosition.x,
+	y: earthCenterPosition.y,
+	radius: milesToCanvas(earthEdgeRadiusMiles + karmanLine),
+	stroke: 'lightgrey',
+	strokeWidth: milesToCanvas(0.1),
+	fill: '#FFFFFF00',
+}));
+
+/* ISS Orbit (Text) */
+layer.add(new Konva.Text({
+	x: earthCenterPosition.x - milesToCanvas(innerCoreEdgeRadius),
+	y: earthCenterPosition.y - milesToCanvas(earthEdgeRadiusMiles + karmanLine),
+	width: milesToCanvas(innerCoreEdgeRadius) * 2,
+	height: mountEvHeight,
+	fill: 'white',
+	text: 'Karmen Line',
+	align: 'center',
+	verticalAlign: 'top',
+	fontSize: mountEvHeight,
+}));
+
+
+/** The SUN */
+const sunCenterX = (earthCenterPosition.x) - milesToCanvas(distanceToSun) + (milesToCanvas(sunRadius / 2));
+layer.add(new Konva.Circle({
+	x: sunCenterX,
+	y: earthCenterPosition.y,
+	radius: milesToCanvas(sunRadius),
+	fill: 'yellow',
+}));
+console.log('sunCenterX', sunCenterX);
+
+/* Line to the Sun */
+// layer.add(new Konva.Circle({
+// 	x: sunCenterX + milesToCanvas(sunRadius * 1.25),
+// 	y: earthCenterPosition.y,
+// 	fill: 'red',
+// 	radius: milesToCanvas(innerCoreEdgeRadius / 4),
+// }));
+// layer.add(new Konva.Circle({
+// 	x: earthCenterPosition.x - milesToCanvas(earthEdgeRadiusMiles * 2),
+// 	y: earthCenterPosition.y,
+// 	fill: 'red',
+// 	radius: milesToCanvas(innerCoreEdgeRadius / 4),
+// }));
+// layer.add(new Konva.Line({
+// 	points: [
+// 		function() {
+// 			const points =
+// 			[
+// 				[
+// 					earthCenterPosition.x - milesToCanvas(earthEdgeRadiusMiles),
+// 					// sunCenterX + milesToCanvas(sunRadius * 1.25),
+// 					earthCenterPosition.y,
+// 				],
+// 				[
+// 					earthCenterPosition.x - milesToCanvas(earthEdgeRadiusMiles * 2),
+// 					earthCenterPosition.y,
+// 				],
+// 			]
+// 			console.log('Line to Sun, Points', points);
+// 			return points;
+// 		}(),
+// 	].flat(),
+// 	stroke: 'white',
+// 	strokeWidth: milesToCanvas(innerCoreEdgeRadius / 4),
+// 	// dashEnabled: true,
+// 	// dash: [milesToCanvas(innerCoreEdgeRadius / 4), milesToCanvas(innerCoreEdgeRadius / 2)],
+// }));
 
 
 /* Cross */
 const crossSize = 0.01;
 layer.add(new Konva.Line({
 	points: [
-	stage.width() / 2            , midTopOfPlanet // mid
+	 stage.width() / 2            , midTopOfPlanet // mid
 	,stage.width() / 2            , midTopOfPlanet - crossSize // mid-top
 	,stage.width() / 2            , midTopOfPlanet + crossSize // mid-bottom
 	,stage.width() / 2            , midTopOfPlanet // mid
@@ -326,7 +427,7 @@ layer.add(new Konva.Line({
 
 
 /** Zoom functionality */
-let scaleBy = 1.1;
+let scaleBy = 1.05;
 stage.on('wheel', (e) => {
 	console.log('stage - wheel');
 
@@ -362,7 +463,8 @@ stage.on('wheel', (e) => {
 });
 
 stage.on('click', () => {
-	console.log('stage - click');
+	const cursorPos = stage.getRelativePointerPosition();
+	console.log(`stage - click: (${cursorPos.x}, ${cursorPos.y})`);
 	let elm = document.getElementById('isBackground');
 	elm?.click();
 });
