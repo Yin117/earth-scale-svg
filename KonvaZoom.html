@@ -60,6 +60,8 @@ function getStats() {
 		karmanLine,
 		averageCommercialFlightMax,
 		averageCommercialFlightMin,
+		averageOceanDepth: 2.3,
+		marianaTrenchDepth: 7,
 	}
 }
 const {
@@ -74,6 +76,8 @@ const {
 	karmanLine,
 	averageCommercialFlightMax,
 	averageCommercialFlightMin,
+	averageOceanDepth,
+	marianaTrenchDepth,
 } = getStats();
 
 const earthCenterPosition = {
@@ -253,6 +257,20 @@ layer.add(new Konva.Text({
 	fontSize: burjKhalifaHeight,
 }));
 
+/* Human */
+// Too small to see
+// const humanHeight = 0.00113636; // 6ft
+// const humanWidth = 0.000245442; // 395mm
+// const human = {
+// 	x: earthCenterPosition.x - milesToCanvas(1),
+// 	y: midTopOfPlanet - milesToCanvas(humanHeight),
+// 	width: milesToCanvas(humanWidth),
+// 	height: milesToCanvas(humanHeight),
+// 	fill: 'ping',
+// };
+// console.log('human', human);
+// layer.add(new Konva.Rect(human))
+
 /* Rig (Line) */
 layer.add(new Konva.Line({
 	points: [
@@ -317,6 +335,30 @@ layer.add(new Konva.Text({
 	fontSize: mountEvHeight,
 }));
 
+// Average Ocean Depth
+layer.add(new Konva.Arc({
+	x: earthCenterPosition.x,
+	y: earthCenterPosition.y,
+	outerRadius: milesToCanvas(earthEdgeRadiusMiles),
+	innerRadius: milesToCanvas(earthEdgeRadiusMiles - averageOceanDepth),
+	fill: 'blue',
+	rotation: 360 - 90 - 4, // 259.7,
+	angle: 3,
+	clockwise: false,
+}));
+
+// Mariana Trench
+layer.add(new Konva.Arc({
+	x: earthCenterPosition.x,
+	y: earthCenterPosition.y,
+	outerRadius: milesToCanvas(earthEdgeRadiusMiles),
+	innerRadius: milesToCanvas(earthEdgeRadiusMiles - marianaTrenchDepth),
+	fill: 'blue',
+	rotation: 360 - 90 - 1.1, // 259.7,
+	angle: 0.05,
+	clockwise: false,
+}));
+
 
 /** The SUN */
 const sunCenterX = (earthCenterPosition.x) - milesToCanvas(distanceToSun) + (milesToCanvas(sunRadius / 2));
@@ -326,7 +368,24 @@ layer.add(new Konva.Circle({
 	radius: milesToCanvas(sunRadius),
 	fill: 'yellow',
 }));
-console.log('sunCenterX', sunCenterX);
+
+// Close Sun
+layer.add(new Konva.Circle({
+	x: earthCenterPosition.x - milesToCanvas(earthEdgeRadiusMiles * 2) - (milesToCanvas(sunRadius)),
+	y: earthCenterPosition.y,
+	radius: milesToCanvas(sunRadius),
+	fill: '#FFFF0050',
+	stroke: 'yellow',
+	strokeWidth: 5,
+}));
+
+layer.add(new Konva.Text({
+	x: earthCenterPosition.x - milesToCanvas(earthEdgeRadiusMiles * 1.75),
+	y: earthCenterPosition.y,
+	text: 'Sun Distance\nnot to Scale\n(keep going left for scale distance)',
+	fill: 'yellow',
+	align: 'center',
+}))
 
 /* Line to the Sun */
 // layer.add(new Konva.Circle({
@@ -368,15 +427,15 @@ console.log('sunCenterX', sunCenterX);
 
 
 /* Cross */
-const crossSize = 0.01;
+const crossSize = 0.05;
 layer.add(new Konva.Line({
 	points: [
-	 stage.width() / 2            , midTopOfPlanet // mid
-	,stage.width() / 2            , midTopOfPlanet - crossSize // mid-top
-	,stage.width() / 2            , midTopOfPlanet + crossSize // mid-bottom
-	,stage.width() / 2            , midTopOfPlanet // mid
-	,stage.width() / 2 - crossSize, midTopOfPlanet // mid-top
-	,stage.width() / 2 + crossSize, midTopOfPlanet // mid-top
+		 earthCenterPosition.x            , midTopOfPlanet // mid
+		,earthCenterPosition.x            , midTopOfPlanet - crossSize // mid-top
+		,earthCenterPosition.x            , midTopOfPlanet + crossSize // mid-bottom
+		,earthCenterPosition.x            , midTopOfPlanet // mid
+		,earthCenterPosition.x - crossSize, midTopOfPlanet // mid-top
+		,earthCenterPosition.x + crossSize, midTopOfPlanet // mid-top
 	],
 	stroke: 'red',
 	strokeWidth: crossSize * 0.1,
