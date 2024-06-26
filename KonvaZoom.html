@@ -11,6 +11,7 @@
         padding: 0;
         overflow: hidden;
         background-color: #000000;
+				cursor: crosshair;
       }
     </style>
   </head>
@@ -40,13 +41,19 @@ function getStats() {
 	const outerCoreEdgeRadius = mantleEdgeRadius - 1_802;
 	const innerCoreEdgeRadius = outerCoreEdgeRadius - 746;
 
+	const issOrbit = 254;
+
 	const distanceToSun = 93_000_000;
 	const sunRadius = 432_690;
-	const issOrbit = 254;
+
+	const distanceToMoon = 238_885;
+	const moonRadius = 1_079.6;
 
 	const karmanLine = 62;
 	const averageCommercialFlightMin = 5.9;
 	const averageCommercialFlightMax = 7.2;
+
+	const himuariSataliteOrbit = 22240.739;
 
 	return {
 		issEdge: earthEdgeRadiusMiles + issOrbit,
@@ -57,11 +64,14 @@ function getStats() {
 		innerCoreEdgeRadius,
 		distanceToSun,
 		sunRadius,
+		distanceToMoon,
+		moonRadius,
 		karmanLine,
 		averageCommercialFlightMax,
 		averageCommercialFlightMin,
 		averageOceanDepth: 2.3,
 		marianaTrenchDepth: 7,
+		himuariSataliteOrbit,
 	}
 }
 const {
@@ -73,11 +83,14 @@ const {
 	innerCoreEdgeRadius,
 	distanceToSun,
 	sunRadius,
+	distanceToMoon,
+	moonRadius,
 	karmanLine,
 	averageCommercialFlightMax,
 	averageCommercialFlightMin,
 	averageOceanDepth,
 	marianaTrenchDepth,
+	himuariSataliteOrbit,
 } = getStats();
 
 const earthCenterPosition = {
@@ -149,7 +162,7 @@ if (isBackground) {
 
 console.log(`Actual Rad: ${rad} vs used Rad: ${planetRad} (${planetRatio * 100}%)`);
 
-/* Planet */
+/* Planet (Crust) */
 layer.add(new Konva.Circle({
 	x: earthCenterPosition.x,
 	y: earthCenterPosition.y,
@@ -157,12 +170,43 @@ layer.add(new Konva.Circle({
 	fill: 'green',
 }));
 
+// Miles?
+layer.add(new Konva.Arc({
+	x: earthCenterPosition.x,
+	y: earthCenterPosition.y,
+	outerRadius: milesToCanvas(earthEdgeRadiusMiles) - milesToCanvas(0.5),
+	innerRadius: milesToCanvas(earthEdgeRadiusMiles) - milesToCanvas(1),
+	fill: 'black',
+	rotation: 90 * 3, // 360 - 90, // 259.7,
+	angle: 1,
+	clockwise: false,
+	dashEnabled: true,
+	dash: [milesToCanvas(1), milesToCanvas(1)],
+}));
+layer.add(new Konva.Text({
+	x: earthCenterPosition.x,
+	y: midTopOfPlanet + milesToCanvas(3),
+	fill: 'black',
+	text: '1 degree (69 nautical miles)',
+	fontSize: milesToCanvas(3),
+}))
+
 // Mantle
 layer.add(new Konva.Circle({
 	x: earthCenterPosition.x,
 	y: earthCenterPosition.y,
 	radius: milesToCanvas(mantleEdgeRadius),
 	fill: 'red',
+}));
+const depthOfMantle = milesToCanvas(mantleEdgeRadius) - milesToCanvas(outerCoreEdgeRadius);
+layer.add(new Konva.Text({
+	x: earthCenterPosition.x - milesToCanvas(69 * 7),
+	y: earthCenterPosition.y - milesToCanvas(mantleEdgeRadius) + (depthOfMantle / 2),
+	align: 'center',
+	verticalAlign: 'middle',
+	fill: 'darkred',
+	text: 'Mantle',
+	fontSize: depthOfMantle / 5,
 }));
 
 // Outer Core
@@ -181,6 +225,38 @@ layer.add(new Konva.Circle({
 	fill: 'yellow',
 }));
 
+layer.add(new Konva.Text({
+	x: earthCenterPosition.x - milesToCanvas(innerCoreEdgeRadius * 0.75),
+	y: earthCenterPosition.y - milesToCanvas(innerCoreEdgeRadius * 0.75),
+	width: milesToCanvas(innerCoreEdgeRadius * (0.75 * 2)),
+	height: milesToCanvas(innerCoreEdgeRadius * (0.75 * 2)),
+	align: 'center',
+	verticalAlign: 'middle',
+	fill: 'black',
+	text: [
+		'Use Scroll wheel,',
+		'or pinch',
+		'to Zoom',
+		'',
+		'With mouse, aim where you want to zoom to, or from'
+	].join('\n'),
+	fontSize: milesToCanvas(innerCoreEdgeRadius / 6),
+}));
+
+layer.add(new Konva.Text({
+	x: earthCenterPosition.x - milesToCanvas(outerCoreEdgeRadius),
+	y: earthCenterPosition.y + milesToCanvas(outerCoreEdgeRadius * 1.1),
+	width: milesToCanvas(outerCoreEdgeRadius * 2),
+	height: depthOfMantle * 0.75,
+	align: 'center',
+	verticalAlign: 'top',
+	fill: 'black',
+	text: [
+		'Scale distance Sun and Moon to the left',
+		'(sun is very far, close comparison one is to the right)'
+	].join('\n'),
+	fontSize: milesToCanvas(innerCoreEdgeRadius / 6),
+}));
 
 /* Traveller from Destiny */
 // const miniCircleRad = 0.745645;
@@ -195,7 +271,7 @@ layer.add(new Konva.Circle({
 const mountEvHeight = milesToCanvas(5.498);
 const mountEvRadiusApprox = milesToCanvas(2.91);
 layer.add(new Konva.Shape({
-	x: (earthCenterPosition.x) - (milesToCanvas(1) * 5),
+	x: (earthCenterPosition.x) + (milesToCanvas(1) * 5),
 	y: midTopOfPlanet,
 	fill: 'grey',
 	sceneFunc: getSceneFuncTriangle(mountEvHeight, mountEvRadiusApprox),
@@ -203,7 +279,7 @@ layer.add(new Konva.Shape({
 
 /* Mount Everest (Text) */
 layer.add(new Konva.Text({
-	x: (earthCenterPosition.x) - (milesToCanvas(1) * 5),
+	x: (earthCenterPosition.x) + (milesToCanvas(1) * 5),
 	y: midTopOfPlanet - mountEvHeight - milesToCanvas(1),
 	width: stage.width(),
 	height: stage.height(),
@@ -217,7 +293,7 @@ layer.add(new Konva.Text({
 const burjKhalifaHeight = milesToCanvas(0.514495);
 const burjKhalifaWidth = milesToCanvas(0.114742404);
 layer.add(new Konva.Shape({
-	x: (earthCenterPosition.x) - 1,
+	x: (earthCenterPosition.x) + milesToCanvas(1),
 	y: midTopOfPlanet + calcDropoffPostRatio(1),
 	fill: 'white',
 	sceneFunc: getSceneFuncTriangle(burjKhalifaHeight, burjKhalifaWidth),
@@ -225,7 +301,7 @@ layer.add(new Konva.Shape({
 
 /* Burj Khalifa (Text) */
 layer.add(new Konva.Text({
-	x: (earthCenterPosition.x) - 1 - (burjKhalifaWidth * 20),
+	x: (earthCenterPosition.x) + milesToCanvas(1),
 	y: midTopOfPlanet - (burjKhalifaHeight * 2),
 	width: stage.width(),
 	height: stage.height(),
@@ -239,7 +315,7 @@ const rigDistance = milesToCanvas(9.41);
 const rigHeight = milesToCanvas(0.0170455);
 const rigWidth = milesToCanvas(0.0310686);
 layer.add(new Konva.Rect({
-	x: (earthCenterPosition.x) - rigDistance,
+	x: (earthCenterPosition.x) + rigDistance,
 	y: midTopOfPlanet - rigHeight + calcDropoff(9.41),
 	width: rigWidth,
 	height: rigHeight,
@@ -248,15 +324,60 @@ layer.add(new Konva.Rect({
 
 /* Rig (Text) */
 layer.add(new Konva.Text({
-	x: (earthCenterPosition.x) - rigDistance,
+	x: (earthCenterPosition.x) + rigDistance,
 	y: midTopOfPlanet - (mountEvHeight * 0.5),
 	width: stage.width(),
 	height: stage.height(),
 	fill: 'blue',
-	text: 'Black Swan \'Rig\'',
+	text: 'Black Swan \'Rig\' (9.41 miles away)',
 	fontSize: burjKhalifaHeight,
 }));
 
+/* Rig (Line) */
+layer.add(new Konva.Line({
+	points: [
+		[
+			(earthCenterPosition.x) + rigDistance,
+			midTopOfPlanet - (mountEvHeight * 0.4)
+		],
+		[
+			(earthCenterPosition.x) + rigDistance,
+			(midTopOfPlanet - rigHeight + calcDropoff(9.41)) - (rigHeight * 2)
+		]
+	].flat(),
+	stroke: 'lightblue',
+	strokeWidth: milesToCanvas(rigWidth * 5),
+	dashEnabled: true,
+	dash: [milesToCanvas(rigHeight * 10), milesToCanvas(rigHeight * 10)],
+}));
+
+/** 35mile line */
+const thirtyFiveMiles = milesToCanvas(35);
+layer.add(new Konva.Text({
+	x: (earthCenterPosition.x) + thirtyFiveMiles,
+	y: midTopOfPlanet - (mountEvHeight * 0.5),
+	width: stage.width(),
+	height: stage.height(),
+	fill: 'yellow',
+	text: '35 miles',
+	fontSize: burjKhalifaHeight,
+}));
+layer.add(new Konva.Line({
+	points: [
+		[
+			(earthCenterPosition.x) + thirtyFiveMiles,
+			midTopOfPlanet - (mountEvHeight * 0.4)
+		],
+		[
+			(earthCenterPosition.x) + thirtyFiveMiles,
+			(midTopOfPlanet - calcDropoff(9.41))
+		]
+	].flat(),
+	stroke: 'yellow',
+	strokeWidth: milesToCanvas(rigWidth * 5),
+	dashEnabled: true,
+	dash: [milesToCanvas(rigHeight * 10), milesToCanvas(rigHeight * 10)],
+}));
 /* Human */
 // Too small to see
 // const humanHeight = 0.00113636; // 6ft
@@ -271,23 +392,6 @@ layer.add(new Konva.Text({
 // console.log('human', human);
 // layer.add(new Konva.Rect(human))
 
-/* Rig (Line) */
-layer.add(new Konva.Line({
-	points: [
-		[
-			(earthCenterPosition.x) - rigDistance,
-			midTopOfPlanet - (mountEvHeight * 0.4)
-		],
-		[
-			(earthCenterPosition.x) - rigDistance,
-			(midTopOfPlanet - rigHeight + calcDropoff(9.41)) - (rigHeight * 2)
-		]
-	].flat(),
-	stroke: 'lightblue',
-	strokeWidth: milesToCanvas(rigWidth * 5),
-	dashEnabled: true,
-	dash: [milesToCanvas(rigHeight * 10), milesToCanvas(rigHeight * 10)],
-}));
 
 /* ISS Orbit */
 layer.add(new Konva.Circle({
@@ -322,7 +426,7 @@ layer.add(new Konva.Circle({
 	fill: '#FFFFFF00',
 }));
 
-/* ISS Orbit (Text) */
+/* Karmen Line (Text) */
 layer.add(new Konva.Text({
 	x: earthCenterPosition.x - milesToCanvas(innerCoreEdgeRadius),
 	y: earthCenterPosition.y - milesToCanvas(earthEdgeRadiusMiles + karmanLine),
@@ -335,14 +439,48 @@ layer.add(new Konva.Text({
 	fontSize: mountEvHeight,
 }));
 
+/* Himuari Satalite Orbit */
+layer.add(new Konva.Circle({
+	x: earthCenterPosition.x,
+	y: earthCenterPosition.y,
+	radius: milesToCanvas(earthEdgeRadiusMiles + himuariSataliteOrbit),
+	stroke: '#D3D3D3', // light grey
+	strokeWidth: milesToCanvas(0.5),
+	fill: '#FFFFFF00',
+}));
+
+// Second larger circle, so it can be spotted when zoomed out
+layer.add(new Konva.Circle({
+	x: earthCenterPosition.x,
+	y: earthCenterPosition.y,
+	radius: milesToCanvas(earthEdgeRadiusMiles + himuariSataliteOrbit),
+	stroke: '#D3D3D350',
+	strokeWidth: milesToCanvas(50),
+	fill: '#FFFFFF00',
+}));
+
+/* Himuari Satalite (Text) */
+layer.add(new Konva.Text({
+	x: earthCenterPosition.x - milesToCanvas(innerCoreEdgeRadius),
+	y: earthCenterPosition.y - milesToCanvas(earthEdgeRadiusMiles + himuariSataliteOrbit + -60),
+	width: milesToCanvas(innerCoreEdgeRadius) * 2,
+	height: milesToCanvas(outerCoreEdgeRadius),
+	fill: 'white',
+	text: 'Himuari Satalite Orbit\n(thickness for visability when zoomed out)',
+	align: 'center',
+	verticalAlign: 'top',
+	fontSize: milesToCanvas(60),
+}));
+
 // Average Ocean Depth
+const startOfOcean = 1.2;
 layer.add(new Konva.Arc({
 	x: earthCenterPosition.x,
 	y: earthCenterPosition.y,
 	outerRadius: milesToCanvas(earthEdgeRadiusMiles),
 	innerRadius: milesToCanvas(earthEdgeRadiusMiles - averageOceanDepth),
 	fill: 'blue',
-	rotation: 360 - 90 - 4, // 259.7,
+	rotation: (90 * 3) + startOfOcean, // 360 - 90 - 4, // 259.7,
 	angle: 3,
 	clockwise: false,
 }));
@@ -354,14 +492,23 @@ layer.add(new Konva.Arc({
 	outerRadius: milesToCanvas(earthEdgeRadiusMiles),
 	innerRadius: milesToCanvas(earthEdgeRadiusMiles - marianaTrenchDepth),
 	fill: 'blue',
-	rotation: 360 - 90 - 1.1, // 259.7,
+	rotation: (90 * 3) + startOfOcean, // 360 - 90 - 1.1, // 259.7,
 	angle: 0.05,
 	clockwise: false,
 }));
+layer.add(new Konva.Text({
+	x: earthCenterPosition.x + milesToCanvas(69 * startOfOcean),
+	y: midTopOfPlanet + calcDropoff(69 * startOfOcean) + milesToCanvas(marianaTrenchDepth + 1),
+	width: 100,
+	height: 100,
+	fill: 'blue',
+	text: 'Mariana Trench',
+	fontSize: milesToCanvas(3),
+}))
 
 
 /** The SUN */
-const sunCenterX = (earthCenterPosition.x) - milesToCanvas(distanceToSun) + (milesToCanvas(sunRadius / 2));
+const sunCenterX = (earthCenterPosition.x) - milesToCanvas(distanceToSun) + milesToCanvas(sunRadius / 2);
 layer.add(new Konva.Circle({
 	x: sunCenterX,
 	y: earthCenterPosition.y,
@@ -371,7 +518,7 @@ layer.add(new Konva.Circle({
 
 // Close Sun
 layer.add(new Konva.Circle({
-	x: earthCenterPosition.x - milesToCanvas(earthEdgeRadiusMiles * 2) - (milesToCanvas(sunRadius)),
+	x: earthCenterPosition.x + milesToCanvas(earthEdgeRadiusMiles * 2) + (milesToCanvas(sunRadius)),
 	y: earthCenterPosition.y,
 	radius: milesToCanvas(sunRadius),
 	fill: '#FFFF0050',
@@ -380,12 +527,33 @@ layer.add(new Konva.Circle({
 }));
 
 layer.add(new Konva.Text({
-	x: earthCenterPosition.x - milesToCanvas(earthEdgeRadiusMiles * 1.75),
+	x: earthCenterPosition.x + milesToCanvas(earthEdgeRadiusMiles * 1.25),
 	y: earthCenterPosition.y,
 	text: 'Sun Distance\nnot to Scale\n(keep going left for scale distance)',
 	fill: 'yellow',
 	align: 'center',
-}))
+}));
+
+/** The MOON */
+const moonCenterX = (earthCenterPosition.x) - milesToCanvas(distanceToMoon) + milesToCanvas(moonRadius / 2);
+layer.add(new Konva.Circle({
+	x: moonCenterX,
+	y: earthCenterPosition.y,
+	radius: milesToCanvas(moonRadius),
+	fill: '#B6B4B1'
+}));
+
+layer.add(new Konva.Text({
+	x: moonCenterX - milesToCanvas(moonRadius),
+	y: earthCenterPosition.y - milesToCanvas(moonRadius),
+	width: milesToCanvas(moonRadius * 2),
+	height: milesToCanvas(moonRadius * 2),
+	text: 'Earth\'s Moon',
+	fill: '#000000',
+	align: 'center',
+	verticalAlign: 'middle',
+	fontSize: milesToCanvas(moonRadius / 5)
+}));
 
 /* Line to the Sun */
 // layer.add(new Konva.Circle({
@@ -440,6 +608,15 @@ layer.add(new Konva.Line({
 	stroke: 'red',
 	strokeWidth: crossSize * 0.1,
 }));
+
+layer.add(new Konva.Line({
+	points: [
+		earthCenterPosition.x - milesToCanvas(earthEdgeRadiusMiles / 2), midTopOfPlanet,
+		earthCenterPosition.y + milesToCanvas(earthEdgeRadiusMiles / 2), midTopOfPlanet,
+	],
+	stroke: '#333333',
+	strokeWidth: milesToCanvas(0.002),
+}))
 
 
 
