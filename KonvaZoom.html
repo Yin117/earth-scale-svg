@@ -518,20 +518,12 @@ layer.add(new Konva.Circle({
 
 // Close Sun
 layer.add(new Konva.Circle({
-	x: earthCenterPosition.x + milesToCanvas(earthEdgeRadiusMiles * 2) + (milesToCanvas(sunRadius)),
+	x: earthCenterPosition.x + milesToCanvas(earthEdgeRadiusMiles * 2.5) + (milesToCanvas(sunRadius)),
 	y: earthCenterPosition.y,
 	radius: milesToCanvas(sunRadius),
 	fill: '#FFFF0050',
 	stroke: 'yellow',
 	strokeWidth: 5,
-}));
-
-layer.add(new Konva.Text({
-	x: earthCenterPosition.x + milesToCanvas(earthEdgeRadiusMiles * 1.25),
-	y: earthCenterPosition.y,
-	text: 'Sun Distance\nnot to Scale\n(keep going left for scale distance)',
-	fill: 'yellow',
-	align: 'center',
 }));
 
 /** The MOON */
@@ -543,6 +535,7 @@ layer.add(new Konva.Circle({
 	fill: '#B6B4B1'
 }));
 
+/** Earth's Moon Text */
 layer.add(new Konva.Text({
 	x: moonCenterX - milesToCanvas(moonRadius),
 	y: earthCenterPosition.y - milesToCanvas(moonRadius),
@@ -553,6 +546,26 @@ layer.add(new Konva.Text({
 	align: 'center',
 	verticalAlign: 'middle',
 	fontSize: milesToCanvas(moonRadius / 5)
+}));
+
+// Close Moon
+layer.add(new Konva.Circle({
+	x: earthCenterPosition.x + milesToCanvas(earthEdgeRadiusMiles * 1.5) + (milesToCanvas(moonRadius)),
+	y: earthCenterPosition.y,
+	radius: milesToCanvas(moonRadius),
+	fill: '#B6B4B150',
+	stroke: '#B6B4B1',
+	strokeWidth: 5,
+}));
+
+layer.add(new Konva.Text({
+	x: earthCenterPosition.x + milesToCanvas(earthEdgeRadiusMiles * 1.5) + (milesToCanvas(moonRadius - (moonRadius * 1.5))),
+	y: earthCenterPosition.y - milesToCanvas(moonRadius * 2.5),
+	width: milesToCanvas(moonRadius * 1.5 * 2),
+	height: milesToCanvas(moonRadius / 2),
+	text: 'Sun & Moon Distance\nnot to Scale\n(keep going left for scale distances)',
+	fill: 'yellow',
+	align: 'center',
 }));
 
 /* Line to the Sun */
