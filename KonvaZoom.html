@@ -10,7 +10,7 @@
         margin: 0;
         padding: 0;
         overflow: hidden;
-        background-color: #000000;
+        background-color: #BFBFBF;
 				cursor: crosshair;
       }
     </style>
@@ -151,13 +151,29 @@ Konva.hitOnDragEnabled = true;
 let isBackground = true;
 
 if (isBackground) {
-	layer.add(new Konva.Rect({
-	x: 0,
-	y: 0,
-	width: stage.width(),
-	height: stage.height(),
-	fill: 'black',
-	}));
+  layer.add(new Konva.Rect({
+    x: earthCenterPosition.x - milesToCanvas(distanceToSun + (sunRadius * 4)),
+    y: earthCenterPosition.y - milesToCanvas(sunRadius * 1.5),
+    width: milesToCanvas((sunRadius * 4) + distanceToSun + (sunRadius * 4)),
+    height: milesToCanvas(sunRadius * 1.5 * 2),
+    fill: 'black',
+  }));
+  
+  layer.add(new Konva.Rect({
+    x: earthCenterPosition.x - milesToCanvas(earthEdgeRadiusMiles * 2),
+    y:earthCenterPosition.y - milesToCanvas(earthEdgeRadiusMiles),
+    width: milesToCanvas(earthEdgeRadiusMiles * 2 * 2),
+    height: milesToCanvas(earthEdgeRadiusMiles * 2),
+    fill: '#1A1A1A',
+  }));
+  
+  layer.add(new Konva.Rect({
+    x: earthCenterPosition.x - milesToCanvas(earthEdgeRadiusMiles),
+    y:earthCenterPosition.y - milesToCanvas(earthEdgeRadiusMiles),
+    width: milesToCanvas(earthEdgeRadiusMiles * 2),
+    height: milesToCanvas(earthEdgeRadiusMiles * 2),
+    fill: '#262626',
+  }));
 }
 
 console.log(`Actual Rad: ${rad} vs used Rad: ${planetRad} (${planetRatio * 100}%)`);
