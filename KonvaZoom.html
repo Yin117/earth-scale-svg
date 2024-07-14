@@ -568,6 +568,73 @@ layer.add(new Konva.Text({
 	align: 'center',
 }));
 
+const topOfSunY = earthCenterPosition.y - milesToCanvas(sunRadius);
+
+const lineFromSunToEarthTop = {
+    distX: Math.abs(sunCenterX - earthCenterPosition.x),
+    distY: Math.abs(midTopOfPlanet - topOfSunY),
+    thickFactor: 1 - ((innerCoreEdgeRadius * 2) / distanceToSun),
+};
+
+/* Line from top of Sun to top of Earth */
+layer.add(new Konva.Line({
+    // x: earthCenterPosition.x,
+    // y: earthCenterPosition.y,
+	points: [
+	    /*
+		[
+			earthCenterPosition.x,
+			midTopOfPlanet, // milesToCanvas(earthEdgeRadiusMiles),
+		],
+		[
+			sunCenterX,
+			earthCenterPosition.y - milesToCanvas(sunRadius),
+		]
+		*/
+		[
+		    sunCenterX,
+		    topOfSunY,
+		],
+		[
+		    sunCenterX + (lineFromSunToEarthTop.distX * lineFromSunToEarthTop.thickFactor),
+		    topOfSunY + (lineFromSunToEarthTop.distY * lineFromSunToEarthTop.thickFactor)
+		]
+	].flat(),
+	stroke: 'yellow',
+	strokeWidth: milesToCanvas(innerCoreEdgeRadius),
+	dashEnabled: true,
+	dash: [milesToCanvas(earthEdgeRadiusMiles * 2), milesToCanvas(earthEdgeRadiusMiles * 2)],
+}));
+// thinner Line
+layer.add(new Konva.Line({
+    // x: earthCenterPosition.x,
+    // y: earthCenterPosition.y,
+	points: [
+	    /*
+		[
+			earthCenterPosition.x,
+			midTopOfPlanet, // milesToCanvas(earthEdgeRadiusMiles),
+		],
+		[
+			sunCenterX,
+			earthCenterPosition.y - milesToCanvas(sunRadius),
+		]
+		*/
+		[
+		    sunCenterX,
+		    topOfSunY,
+		],
+		[
+		    sunCenterX + (lineFromSunToEarthTop.distX),
+		    topOfSunY + (lineFromSunToEarthTop.distY)
+		]
+	].flat(),
+	stroke: 'yellow',
+	strokeWidth: milesToCanvas(burjKhalifaHeight),
+	// dashEnabled: true,
+	// dash: [milesToCanvas(earthEdgeRadiusMiles * 2), milesToCanvas(earthEdgeRadiusMiles * 2)],
+}));
+
 /* Line to the Sun */
 // layer.add(new Konva.Circle({
 // 	x: sunCenterX + milesToCanvas(sunRadius * 1.25),
@@ -624,11 +691,11 @@ layer.add(new Konva.Line({
 
 layer.add(new Konva.Line({
 	points: [
-		earthCenterPosition.x - milesToCanvas(earthEdgeRadiusMiles / 2), midTopOfPlanet,
-		earthCenterPosition.y + milesToCanvas(earthEdgeRadiusMiles / 2), midTopOfPlanet,
+		earthCenterPosition.x - milesToCanvas(earthEdgeRadiusMiles * 3), midTopOfPlanet,
+		earthCenterPosition.y + milesToCanvas(earthEdgeRadiusMiles * 3), midTopOfPlanet,
 	],
-	stroke: '#333333',
-	strokeWidth: milesToCanvas(0.002),
+	stroke: '#D9D9D9',
+	strokeWidth: milesToCanvas(0.003),
 }))
 
 
