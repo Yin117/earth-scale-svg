@@ -151,6 +151,8 @@ Konva.hitOnDragEnabled = true;
 let isBackground = true;
 
 if (isBackground) {
+
+	// Black background
   layer.add(new Konva.Rect({
     x: earthCenterPosition.x - milesToCanvas(distanceToSun + (sunRadius * 4)),
     y: earthCenterPosition.y - milesToCanvas(sunRadius * 1.5),
@@ -159,14 +161,17 @@ if (isBackground) {
     fill: 'black',
   }));
   
+	// wider rectangle
+	const rectangleSize = 2.3;
   layer.add(new Konva.Rect({
-    x: earthCenterPosition.x - milesToCanvas(earthEdgeRadiusMiles * 2),
+    x: earthCenterPosition.x - milesToCanvas(earthEdgeRadiusMiles * rectangleSize),
     y:earthCenterPosition.y - milesToCanvas(earthEdgeRadiusMiles),
-    width: milesToCanvas(earthEdgeRadiusMiles * 2 * 2),
+    width: milesToCanvas(earthEdgeRadiusMiles * rectangleSize * 2),
     height: milesToCanvas(earthEdgeRadiusMiles * 2),
     fill: '#1A1A1A',
   }));
   
+	// Swaure around the Earth
   layer.add(new Konva.Rect({
     x: earthCenterPosition.x - milesToCanvas(earthEdgeRadiusMiles),
     y:earthCenterPosition.y - milesToCanvas(earthEdgeRadiusMiles),
@@ -432,7 +437,7 @@ layer.add(new Konva.Text({
 	fontSize: mountEvHeight,
 }));
 
-/* Karmen Line*/
+/* Karman Line */
 layer.add(new Konva.Circle({
 	x: earthCenterPosition.x,
 	y: earthCenterPosition.y,
@@ -442,14 +447,14 @@ layer.add(new Konva.Circle({
 	fill: '#FFFFFF00',
 }));
 
-/* Karmen Line (Text) */
+/* Karman Line (Text) */
 layer.add(new Konva.Text({
 	x: earthCenterPosition.x - milesToCanvas(innerCoreEdgeRadius),
 	y: earthCenterPosition.y - milesToCanvas(earthEdgeRadiusMiles + karmanLine),
 	width: milesToCanvas(innerCoreEdgeRadius) * 2,
 	height: mountEvHeight,
 	fill: 'white',
-	text: 'Karmen Line',
+	text: 'Kármán line',
 	align: 'center',
 	verticalAlign: 'top',
 	fontSize: mountEvHeight,
@@ -564,6 +569,19 @@ layer.add(new Konva.Text({
 	fontSize: milesToCanvas(moonRadius / 5)
 }));
 
+const widthOfLargerMoonLabel = milesToCanvas(moonRadius * 2 * 60);
+layer.add(new Konva.Text({
+	x: moonCenterX - (widthOfLargerMoonLabel / 2),
+	y: earthCenterPosition.y - milesToCanvas(moonRadius * 2 * 10),
+	width: widthOfLargerMoonLabel,
+	height: milesToCanvas(moonRadius * 2 * 5),
+	text: 'Earth\'s Moon',
+	fill: '#FFFFFF',
+	align: 'center',
+	verticalAlign: 'middle',
+	fontSize: milesToCanvas(moonRadius * 2 * 4)
+}));
+
 // Close Moon
 layer.add(new Konva.Circle({
 	x: earthCenterPosition.x + milesToCanvas(earthEdgeRadiusMiles * 1.5) + (milesToCanvas(moonRadius)),
@@ -608,19 +626,38 @@ layer.add(new Konva.Line({
 		]
 		*/
 		[
+		    sunCenterX + (lineFromSunToEarthTop.distX * lineFromSunToEarthTop.thickFactor),
+		    topOfSunY + (lineFromSunToEarthTop.distY * lineFromSunToEarthTop.thickFactor)
+		],
+		[
 		    sunCenterX,
 		    topOfSunY,
 		],
-		[
-		    sunCenterX + (lineFromSunToEarthTop.distX * lineFromSunToEarthTop.thickFactor),
-		    topOfSunY + (lineFromSunToEarthTop.distY * lineFromSunToEarthTop.thickFactor)
-		]
 	].flat(),
 	stroke: 'yellow',
 	strokeWidth: milesToCanvas(innerCoreEdgeRadius),
 	dashEnabled: true,
 	dash: [milesToCanvas(earthEdgeRadiusMiles * 2), milesToCanvas(earthEdgeRadiusMiles * 2)],
 }));
+
+function logObj(obj, message) {
+	console.log(message, obj);
+	return obj;
+}
+
+const additionalLineSunEarthHeight = mountEvHeight * 90;
+layer.add(new Konva.Text(logObj({
+	x: sunCenterX + (lineFromSunToEarthTop.distX * lineFromSunToEarthTop.thickFactor),
+	y: (topOfSunY + (lineFromSunToEarthTop.distY * lineFromSunToEarthTop.thickFactor)) - milesToCanvas((mountEvHeight * 4) + additionalLineSunEarthHeight),
+	width: milesToCanvas(moonRadius * 2),
+	height: milesToCanvas(moonRadius),
+	text: 'Line from top of Sun to top of Earth (thin beneath)',
+	fill: 'yellow',
+	align: 'left',
+	verticalAlign: 'top',
+	fontSize: milesToCanvas((mountEvHeight * 5) + additionalLineSunEarthHeight)
+}, 'Text - Line from top of Sun to top of Earth')));
+
 // thinner Line
 layer.add(new Konva.Line({
     // x: earthCenterPosition.x,
