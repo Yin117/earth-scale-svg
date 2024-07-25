@@ -50,7 +50,7 @@ function getStats() {
 
 	// Takes miles, and converts to SVG scale
 	function toCanvas(miles) {
-		return miles * planetRatio;
+		return Math.ceil(miles * planetRatio);
 	}
 
 	const earthX = 0;
@@ -131,7 +131,7 @@ function getStats() {
 	const jupiter = {
 		name: 'Jupiter',
 		radius: 43_441,
-		distanceToSun: 483_800_00,
+		distanceToSun: 483_800_000,
 		fill: '#8F3801',
 	};
 	jupiter.x = sun.x + toCanvas(jupiter.distanceToSun);
@@ -171,15 +171,15 @@ function getStats() {
 
 	const fitThePlanetsRemainingDistance = (distanceToMoon + earthRadius + moonRadius)
 		// - (sun.radius)
-		- (mercury.radius * 2)
-		- (venus.radius * 2)
+		- Math.ceil(mercury.radius * 2)
+		- Math.ceil(venus.radius * 2)
 		// - (earth.radius)
-		- (mars.radius * 2)
-		- (jupiter.radius * 2)
-		- (saturn.radius * 2)
-		- (uranus.radius * 2)
-		- (neptune.radius * 2)
-		- (pluto.radius * 2)
+		- Math.ceil(mars.radius * 2)
+		- Math.ceil(jupiter.radius * 2)
+		- Math.ceil(saturn.radius * 2)
+		- Math.ceil(uranus.radius * 2)
+		- Math.ceil(neptune.radius * 2)
+		- Math.ceil(pluto.radius * 2)
 	;
 	console.log('fitThePlanetsRemainingDistance', fitThePlanetsRemainingDistance);
 
@@ -442,7 +442,7 @@ if (isBackground) {
   layer.add(new Konva.Rect({
     x: earthCenterPosition.x - toCanvas(earthToSun + (sunRadius * 4)),
     y: earthCenterPosition.y - toCanvas(sunRadius * 1.5),
-    width: toCanvas((sunRadius * 4) + earthToSun + (sunRadius * 4)),
+    width: toCanvas((sunRadius * 4) + pluto.distanceToSun + (sunRadius * 4)),
     height: backgroundHeight,
     fill: 'black',
   }));
@@ -468,6 +468,23 @@ if (isBackground) {
 }
 
 console.log(`Actual Rad: ${rad} vs used Rad: ${planetRad} (${planetRatio * 100}%)`);
+
+
+	
+const celestialTriangleHeight = toCanvas(sunRadius * 50);
+layer.add(new Konva.Shape({
+	x: earthCenterPosition.x,
+	y: earthCenterPosition.y + (backgroundHeight / 2) + celestialTriangleHeight,
+	fill: 'green',
+	sceneFunc: getSceneFuncTriangle(toCanvas(sunRadius * 50), celestialTriangleHeight),
+}));
+
+layer.add(new Konva.Shape({
+	x: sun.x,
+	y: earthCenterPosition.y + (backgroundHeight / 2) + celestialTriangleHeight,
+	fill: 'yellow',
+	sceneFunc: getSceneFuncTriangle(toCanvas(sunRadius * 50), celestialTriangleHeight),
+}));
 
 /* Planet (Crust) */
 layer.add(new Konva.Circle({
@@ -1049,7 +1066,7 @@ layer.add(new Konva.Text(logObj({
 	verticalAlign: 'middle',
 }, 'All other Planets fit between Earth and Moon')));
 
-function renderSimplePlanet(planet, message) {
+function renderSimplePlanet(planet, message, additionalTriangleProps = {}) {
 	layer.add(new Konva.Circle(logObj({
 		x: planet.x,
 		y: earthCenterPosition.y,
@@ -1057,36 +1074,45 @@ function renderSimplePlanet(planet, message) {
 		fill: planet.fill,
 	}, message)));
 
+    
+  const textHeight = toCanvas(sunRadius * 10);
 	layer.add(new Konva.Text(logObj({
 		x: planet.x,
-		y: earthCenterPosition.y - (backgroundHeight / 2) - toCanvas(sunRadius * 2),
-		height: toCanvas(sunRadius * 2),
+		y: earthCenterPosition.y - (backgroundHeight / 2) - textHeight,
+		height: textHeight,
 		width: toCanvas(sunRadius * 100),
 		text: message,
-		fill: 'black',
-		fontSize: toCanvas(sunRadius * 2),
+		fill: 'red',
+		align: 'left',
+		verticalAlign: 'top',
+		fontSize: textHeight,
 	}, `renderSimplePlanet - Text - '${message}'`)));
 	
-	layer.add(new Konva.Shape({
+	
+	layer.add(new Konva.Shape(logObj({
 		x: planet.x,
-		y: earthCenterPosition.y + (backgroundHeight / 2) + toCanvas(sunRadius * 2),
+		y: earthCenterPosition.y + (backgroundHeight / 2) + celestialTriangleHeight,
 		fill: planet.fill,
-		sceneFunc: getSceneFuncTriangle(toCanvas(sunRadius * 2), toCanvas(sunRadius * 5)),
-	}));
+		sceneFunc: getSceneFuncTriangle(toCanvas(sunRadius * 50), celestialTriangleHeight),
+		...additionalTriangleProps,
+	}, `renderSimplePlanet - Triangle - ${message}`)));
 }
 
 renderSimplePlanet(mercury, 'Mercury');
-
 renderSimplePlanet(venus, 'Venus');
-
-// layer.add(new Konva.Circle(logObj({
-// 	x: mercury.x,
-// 	y: earthCenterPosition.y,
-// 	radius: toCanvas(mercury.radius),
-// 	fill: mercury.fill,
-// }, 'Mercury Circle')));
-
-
+renderSimplePlanet(mars, 'Mars');
+renderSimplePlanet(jupiter, 'Jupiter');
+renderSimplePlanet(saturn, 'Saturn');
+renderSimplePlanet(uranus, 'Uranus');
+renderSimplePlanet(neptune, 'Neptune');
+renderSimplePlanet(
+	pluto,
+	'Pluto',
+	{
+		stroke: '#000000',
+		strokeWidth: toCanvas(sunRadius * 4)
+	}
+);
 
 
 /* Cross */
@@ -1104,69 +1130,24 @@ layer.add(new Konva.Line({
 	strokeWidth: crossSize * 0.1,
 }));
 
-// layer.add(new Konva.Line({
-// 	points: [
-// 		earthCenterPosition.x - toCanvas(earthRadius * 3), midTopOfPlanet,
-// 		earthCenterPosition.y + toCanvas(earthRadius * 3), midTopOfPlanet,
-// 	],
-// 	stroke: '#D9D9D9',
-// 	strokeWidth: toCanvas(0.003),
-// }))
-
-
-
-// TODO: Crosshair
-// https://observablehq.com/@imakashram/line-chart-with-crosshair
-
-/* Crosshair on Click */
-// const crosshairGroup = new Konva.Group({
-// 	x: 0,
-// 	y: 0,
-// });
-// layer.add(crosshairGroup);
-// const crosshairArea = new Konva.Rect({
-// 	x: 0,
-// 	y: 0,
-// 	width: stage.width(),
-// 	height: stage.height(),
-// });
-// crosshairGroup.add(crosshairArea);
-
-// const crosshair = new Konva.Circle({
-// 	x: 0,
-// 	y: 0,
-// 	radius: 0,
-// 	color: 'red',
-// });
-// // layer.add(crosshair);
-// // crosshairGroup.add(crosshair);
-
-// stage.on('mousemove touchmove', event => {
-// 	console.log('crosshairArea - mousemove touchmove');
-
-// 	const pos = stage.getPointerPosition(); // crosshairGroup.getRelativePointerPosition();
-	
-// 	console.log(`(${pos.x}, ${pos.y})`);
-// 	crosshair.x(pos.x);
-// 	crosshair.y(pos.y);
-
-// 	crosshair.radius(toCanvas(10));
-
-// 	layer.add(crosshair);
-// 	layer.draw();
-// });
-
 
 /** Zoom functionality */
 let scaleBy = 1.05;
 stage.on('wheel', (e) => {
-	console.log('stage - wheel');
+	let pointer = stage.getPointerPosition();
+
+	console.log('stage - wheel', {
+		stage: {
+			x: stage.x(),
+			y: stage.y(),
+		},
+		pointer,
+	});
 
 	// stop default scrolling
 	e.evt.preventDefault();
 
 	let oldScale = stage.scaleX();
-	let pointer = stage.getPointerPosition();
 
 	let mousePointTo = {
 		x: (pointer.x - stage.x()) / oldScale,
@@ -1193,37 +1174,25 @@ stage.on('wheel', (e) => {
 	stage.position(newPos);
 });
 
-// container.addEventListener('keydown', function (e) {
-// 	const delta = toCanvas(moonRadius * 2);
-// 	if (e.keyCode === 37) {
-// 		// left
-// 		stage.position({
-// 			x: stage.x - delta,
-// 			y: stage.y,
-// 		});
-// 	} else if (e.keyCode === 38) {
-// 		// up
-// 		stage.position({
-// 			x: stage.x,
-// 			y: stage.y - delta,
-// 		});
-// 	} else if (e.keyCode === 39) {
-// 		// right
-// 		stage.position({
-// 			x: stage.x + delta,
-// 			y: stage.y,
-// 		});
-// 	} else if (e.keyCode === 40) {
-// 		// down
-// 		stage.position({
-// 			x: stage.x,
-// 			y: stage.y + delta,
-// 		});
-// 	} else {
-// 		return;
-// 	}
-// 	e.preventDefault();
-// });
+addEventListener('keydown', function (e) {
+	console.log(`keydown: ${e.keyCode}`);
+	if (e.keyCode === 37) {
+		// left
+		stage.x(stage.x() + (stage.width() / 5));
+	} else if (e.keyCode === 38) {
+		// up
+		stage.y(stage.y() + (stage.height() / 5));
+	} else if (e.keyCode === 39) {
+		// right
+		stage.x(stage.x() - (stage.width() / 5));
+	} else if (e.keyCode === 40) {
+		// down
+		stage.y(stage.y() - (stage.height() / 5));
+	} else {
+		return;
+	}
+	e.preventDefault();
+});
 
 stage.on('click', () => {
 	const cursorPos = stage.getRelativePointerPosition();
@@ -1300,12 +1269,38 @@ stage.on('touchmove', function (e) {
 	}
 	});
 
-	stage.on('touchend', function (e) {
-		lastDist = 0;
-		lastCenter = null;
-	});
+stage.on('touchend', function (e) {
+	lastDist = 0;
+	lastCenter = null;
+});
 
-	console.log('%c'+'Code complete', 'background-color: black; color: green;')
+function doubleClickOrTap(e) {
+	e.evt.preventDefault();
+	
+	let pointer = stage.getPointerPosition();
+
+	const diff = {
+		x: pointer.x - (stage.width() / 2),
+		y: pointer.y - (stage.height() / 2),
+	};
+
+	let newPos = {
+		x: stage.x() - diff.x,
+		y: stage.y() - diff.y,
+		// x: pointer.x, //  + (stage.width() / 2),
+		// y: pointer.y, //  + (stage.height() / 2), //  mousePointTo.y * newScale,
+	};
+
+	console.log(`Stage moved from (${stage.x()}, ${stage.y()}) to (${newPos.x}, ${newPos.y}) via pointer (${pointer.x}, ${pointer.y})`);
+
+	stage.position(newPos);
+}
+
+stage.on('dblclick', doubleClickOrTap);
+
+stage.on('dbltap', doubleClickOrTap);
+
+console.log('%c'+'Code complete', 'background-color: black; color: green;')
     </script>
   </body>
 </html>
