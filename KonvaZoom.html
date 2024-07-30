@@ -50,6 +50,7 @@ function getStats() {
 
 	// Takes miles, and converts to SVG scale
 	function toCanvas(miles) {
+		return miles * planetRatio;
 		return Math.ceil(miles * planetRatio);
 	}
 
