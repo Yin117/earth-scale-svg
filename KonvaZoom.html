@@ -526,11 +526,23 @@ layer.add(new Konva.Circle({
 const depthOfMantle = toCanvas(mantleEdgeRadius) - toCanvas(outerCoreEdgeRadius);
 layer.add(new Konva.Text({
 	x: earthCenterPosition.x - toCanvas(69 * 7),
-	y: earthCenterPosition.y - toCanvas(mantleEdgeRadius) + (depthOfMantle / 2),
+	y: earthCenterPosition.y - toCanvas(mantleEdgeRadius) + (depthOfMantle * 0.75),
 	align: 'center',
 	verticalAlign: 'middle',
 	fill: 'darkred',
 	text: 'Mantle',
+	fontSize: depthOfMantle / 5,
+}));
+
+// Instructions
+layer.add(new Konva.Text({
+	x: earthCenterPosition.x - toCanvas(mantleEdgeRadius),
+	width: toCanvas(mantleEdgeRadius * 2),
+	y: earthCenterPosition.y - toCanvas(mantleEdgeRadius) + (depthOfMantle * 0.10),
+	align: 'center',
+	verticalAlign: 'middle',
+	fill: 'darkred',
+	text: '^' + '\n' + 'Zoom-in to the Middle',
 	fontSize: depthOfMantle / 5,
 }));
 
@@ -1024,16 +1036,17 @@ layer.add(new Konva.Line({
 // }));
 
 function renderSimplePlanetForBetweenEarthAndMoon(x, planet) {
+	const y = earthCenterPosition.y + toCanvas(earthRadius * 4);
 	layer.add(new Konva.Circle( logObj({
-		x: x, // moon.x + toCanvas(moon.distanceToEarth / 2),
-		y: earthCenterPosition.y,
+		x, // moon.x + toCanvas(moon.distanceToEarth / 2),
+		y,
 		radius: toCanvas(planet.radius),
 		fill: `${planet.fill}${hexOpacity['15']}`,
 	}, `render Planet in Gap - ${planet.name}`)));
 
 	layer.add(new Konva.Text({
 		x: x - toCanvas(planet.radius),
-		y: earthCenterPosition.y - toCanvas(planet.radius),
+		y: y - toCanvas(planet.radius),
 		width: toCanvas(planet.radius * 2),
 		height: toCanvas(planet.radius * 2),
 		align: 'center',
@@ -1062,7 +1075,7 @@ layer.add(new Konva.Text(logObj({
 	height: toCanvas(jupiter.radius),
 	fontSize: toCanvas(jupiter.radius / 3),
 	fill: '#FFFFFF',
-	text: 'All other Planets fit between Earth and Moon',
+	text: 'All other Planets fit between Earth and Moon (some res cause issues)',
 	align: 'center',
 	verticalAlign: 'middle',
 }, 'All other Planets fit between Earth and Moon')));
